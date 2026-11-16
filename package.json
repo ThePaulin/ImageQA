@@ -1,0 +1,20 @@
+{
+  "name": "image-qa",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "models": "node scripts/fetch-models.mjs",
+    "dev": "node scripts/fetch-models.mjs && vite --host 127.0.0.1",
+    "build": "node scripts/fetch-models.mjs && vite build",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "dependencies": {
+    "@fontsource-variable/dm-sans": "5.2.8",
+    "lucide-static": "0.577.0",
+    "onnxruntime-web": "1.31.1"
+  },
+  "devDependencies": {
+    "vite": "8.0.13"
+  }
+}

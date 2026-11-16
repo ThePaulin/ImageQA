@@ -1,0 +1,16 @@
+Image QA model attribution
+
+LaMa (Suvorov et al., WACV 2022), Apache License 2.0
+https://github.com/advimman/lama
+ONNX conversion with weight-only INT8 quantization and fixed 512 x 512 input by g-ronimo
+https://huggingface.co/g-ronimo/lama
+LaMa was trained on Places2 (Zhou et al.).
+http://places2.csail.mit.edu/
+
+U²-Net (Qin et al., Pattern Recognition 2020), Apache License 2.0
+https://github.com/xuebinqin/U-2-Net
+U²-Net Lite ONNX distribution by rembg, mirrored by nfa04
+https://github.com/danielgatis/rembg
+https://huggingface.co/nfa04/u2netp-onnx
+
+The Apache License 2.0 text is included as LICENSE-apache-2.0.txt.

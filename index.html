@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="referrer" content="no-referrer" />
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data:; worker-src 'self' blob:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'" />
+    <meta name="description" content="Remove watermarks and backgrounds in a free, private, on-device image editor." />
+    <meta name="theme-color" content="#f7f7fb" />
+    <title>Image QA — Private image editor</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="header-inner">
+        <div class="brand">
+          <span class="brand-icon" data-icon="scan-line"></span>
+          <span>Image<span class="brand-accent">QA</span></span>
+        </div>
+        <button class="privacy-pill" id="privacy" type="button">
+          <span data-icon="shield-check"></span> Private by design
+        </button>
+      </div>
+    </header>
+
+    <main class="shell">
+      <div class="page-title">
+        <h1>Image editor</h1>
+        <p>Remove watermarks and backgrounds right in your browser.</p>
+      </div>
+
+      <section class="editor" aria-label="Image editor workspace">
+        <aside class="sidebar">
+          <div class="tool-section">
+            <h2 class="eyebrow">Editing tools</h2>
+            <div class="tools" role="group" aria-label="Editing tool">
+              <button class="tool" id="watermark-tool" aria-pressed="true" type="button">
+                <span class="tool-icon" data-icon="eraser"></span>
+                <span>Remove watermark</span>
+              </button>
+              <button class="tool" id="background-tool" aria-pressed="false" type="button">
+                <span class="tool-icon" data-icon="scan-face"></span>
+                <span>Remove background</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="tool-options">
+            <h2 id="options-title">Watermark brush</h2>
+            <p id="instructions">Paint over the watermark, then run the tool to fill the area.</p>
+            <div id="brush-options">
+              <div class="range-label">
+                <label for="brush">Brush size</label>
+                <output id="brush-value" for="brush">40 px</output>
+              </div>
+              <input type="range" id="brush" min="8" max="160" value="40" disabled />
+              <div class="mask-actions">
+                <button class="quiet-button" id="undo" type="button" disabled>
+                  <span data-icon="undo-2"></span> Undo
+                </button>
+                <button class="quiet-button" id="clear" type="button" disabled>Clear mask</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="sidebar-bottom">
+            <button class="button primary run" id="run" type="button" disabled>
+              <span data-icon="sparkles"></span><span id="run-label">Remove watermark</span>
+            </button>
+            <p id="setup-hint">LaMa model · 62 MB on first use</p>
+          </div>
+        </aside>
+
+        <div class="workspace">
+          <div class="workspace-bar">
+            <div class="file-actions">
+              <button class="button secondary" type="button" id="open">
+                <span data-icon="folder-open"></span><span>Open image</span>
+              </button>
+              <span id="filename" class="filename" hidden></span>
+            </div>
+            <div class="output-actions">
+              <div class="segmented" role="group" aria-label="Preview">
+                <button id="original" aria-pressed="true" disabled type="button">Original</button>
+                <button id="result" aria-pressed="false" disabled type="button">Result</button>
+              </div>
+              <button class="button download" id="download" type="button" aria-label="Download PNG" disabled>
+                <span data-icon="download"></span><span>Download PNG</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="stage" class="stage">
+            <div id="empty" class="empty">
+              <div class="upload-card">
+                <div class="upload-icon" data-icon="image-up"></div>
+                <h2>Drop an image here</h2>
+                <p>Choose a JPG, PNG, or WebP to get started.</p>
+                <button class="button primary choose" id="choose" type="button">
+                  <span data-icon="plus"></span> Choose image
+                </button>
+              </div>
+              <button class="sample" id="sample" type="button">
+                <img src="/assets/balloon.jpg" alt="" width="44" height="34" />
+                <span>Try a sample image</span>
+                <span data-icon="arrow-up-right"></span>
+              </button>
+            </div>
+            <div id="image-viewport" class="image-viewport" role="region" aria-label="Image viewport" hidden>
+              <div id="image-stack" class="image-stack checker">
+                <img id="preview" alt="Image preview" draggable="false" />
+                <canvas id="overlay" tabindex="0" aria-label="Watermark brush. Use arrow keys to move and Space to paint."></canvas>
+                <div id="brush-cursor" class="brush-cursor" hidden></div>
+              </div>
+            </div>
+            <div id="busy" class="busy-sheet" hidden>
+              <div class="busy-card" role="status">
+                <span class="spinner" aria-hidden="true"></span>
+                <strong id="progress-text">Preparing model…</strong>
+                <progress id="progress" max="1" hidden aria-label="Model loading progress"></progress>
+              </div>
+            </div>
+            <div class="drop-sheet" aria-hidden="true">
+              <span data-icon="image-up"></span> Drop to open image
+            </div>
+          </div>
+
+          <div class="workspace-status">
+            <span id="status" role="status">No image open</span>
+            <div id="zoom-controls" class="zoom-controls" role="group" aria-label="Image zoom" hidden>
+              <button class="quiet-button" id="zoom-out" type="button" aria-label="Zoom out" title="Zoom out" disabled>
+                <span data-icon="zoom-out"></span>
+              </button>
+              <output id="zoom-value" aria-label="Zoom level">100%</output>
+              <button class="quiet-button" id="zoom-in" type="button" aria-label="Zoom in" title="Zoom in" disabled>
+                <span data-icon="zoom-in"></span>
+              </button>
+              <button class="quiet-button" id="zoom-fit" type="button" aria-label="Fit image" title="Fit image" disabled>Fit</button>
+              <button class="quiet-button" id="pan" type="button" aria-label="Pan image" aria-pressed="false" title="Drag to pan" disabled>
+                <span data-icon="hand"></span> Pan
+              </button>
+            </div>
+            <button class="quiet-button" id="reset" type="button" hidden>
+              <span data-icon="rotate-ccw"></span> Reset edits
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <footer class="site-footer">
+        <span><span data-icon="lock-keyhole"></span> Images stay on this device.</span>
+        <span>Free to use <span class="footer-dot" aria-hidden="true"></span> No tracking</span>
+      </footer>
+      <input type="file" id="file" accept="image/jpeg,image/png,image/webp,.jpg,.jpeg,.png,.webp" hidden />
+    </main>
+
+    <dialog id="privacy-dialog" aria-labelledby="privacy-title">
+      <form method="dialog">
+        <button class="quiet-button close-dialog" type="submit" aria-label="Close privacy details">
+          <span data-icon="x"></span>
+        </button>
+      </form>
+      <div class="dialog-icon" data-icon="shield-check"></div>
+      <h2 id="privacy-title">Your images stay here</h2>
+      <p>Image QA processes images in this tab using WebAssembly. Images and selections stay in memory until you close or reload the editor. Downloads are saved by your browser.</p>
+      <p>The app loads model files from the same place you opened Image QA. It has no accounts, analytics, or image upload endpoint.</p>
+    </dialog>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
